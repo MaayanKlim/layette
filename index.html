@@ -1,0 +1,912 @@
+<title>Layette</title>
+
+<style>
+:root{
+  --ground:#F4F6F9;
+  --surface:#FFFFFF;
+  --surface-2:#EEF1F6;
+  --ink:#151922;
+  --ink-soft:#5B6473;
+  --ink-faint:#8A93A3;
+  --line:#E0E5EC;
+  --line-strong:#CBD2DD;
+  --accent:#2F4B8F;
+  --accent-soft:#E4EAF7;
+  --short:#A65F00;
+  --short-soft:#FBEEDA;
+  --stocked:#1B6E59;
+  --stocked-soft:#DFF0EA;
+  --focus:#2F4B8F;
+
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1116;
+    --surface:#171B22;
+    --surface-2:#1E232C;
+    --ink:#E9EDF3;
+    --ink-soft:#9AA4B4;
+    --ink-faint:#6B7484;
+    --line:#262C36;
+    --line-strong:#39414E;
+    --accent:#8FA9E8;
+    --accent-soft:#1D2740;
+    --short:#E0A040;
+    --short-soft:#33260F;
+    --stocked:#4FC0A1;
+    --stocked-soft:#0F2A24;
+    --focus:#8FA9E8;
+  }
+}
+
+:root[data-theme="dark"]{
+  --ground:#0E1116;
+  --surface:#171B22;
+  --surface-2:#1E232C;
+  --ink:#E9EDF3;
+  --ink-soft:#9AA4B4;
+  --ink-faint:#6B7484;
+  --line:#262C36;
+  --line-strong:#39414E;
+  --accent:#8FA9E8;
+  --accent-soft:#1D2740;
+  --short:#E0A040;
+  --short-soft:#33260F;
+  --stocked:#4FC0A1;
+  --stocked-soft:#0F2A24;
+  --focus:#8FA9E8;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:64px;
+}
+
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+button{cursor:pointer;}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px;}
+
+.wrap{max-width:640px;margin:0 auto;}
+
+/* ---------- masthead ---------- */
+.masthead{padding:26px 18px 18px;}
+.tag{
+  font-family:var(--mono);
+  font-size:10.5px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.tag .dot{width:3px;height:3px;border-radius:50%;background:var(--line-strong);}
+.masthead h1{
+  margin:9px 0 6px;
+  font-size:30px;
+  line-height:1.08;
+  letter-spacing:-.022em;
+  font-weight:640;
+  text-wrap:balance;
+}
+.masthead p{
+  margin:0;
+  max-width:44ch;
+  font-size:14px;
+  line-height:1.5;
+  color:var(--ink-soft);
+}
+
+/* ---------- sticky summary ---------- */
+.summary{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:var(--surface);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+.summary-inner{max-width:640px;margin:0 auto;display:flex;align-items:stretch;}
+.stat{
+  flex:1;
+  padding:11px 14px 12px;
+  min-width:0;
+  border-left:1px solid var(--line);
+}
+.stat:first-child{border-left:none;}
+.stat .k{
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.stat .v{
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+  font-size:21px;
+  font-weight:600;
+  letter-spacing:-.02em;
+  line-height:1.25;
+  margin-top:1px;
+}
+.stat .v small{font-size:12.5px;font-weight:500;color:var(--ink-soft);letter-spacing:0;}
+.stat.pct .v{color:var(--accent);}
+.stat.cost .v{color:var(--short);}
+.stat.cost.clear .v{color:var(--stocked);}
+
+.meter{height:3px;background:var(--surface-2);}
+.meter span{display:block;height:100%;background:var(--accent);transition:width .3s cubic-bezier(.4,0,.2,1);}
+
+/* ---------- filters ---------- */
+.filters{
+  display:flex;
+  gap:6px;
+  padding:14px 18px 4px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.filters::-webkit-scrollbar{display:none;}
+.filters button{
+  flex:0 0 auto;
+  background:var(--surface);
+  border:1px solid var(--line);
+  color:var(--ink-soft);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  padding:8px 13px;
+  border-radius:7px;
+  min-height:36px;
+}
+.filters button[aria-pressed="true"]{
+  background:var(--accent-soft);
+  border-color:var(--accent);
+  color:var(--accent);
+  font-weight:600;
+}
+
+/* ---------- list ---------- */
+.list{padding:8px 18px 0;display:flex;flex-direction:column;gap:9px;}
+
+.item{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:11px;
+  overflow:hidden;
+}
+.item-head{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:12px 12px 10px 14px;
+}
+.item-id{flex:1;min-width:0;}
+.item-name{font-size:15px;font-weight:600;letter-spacing:-.01em;line-height:1.3;}
+.item.done .item-name{color:var(--ink-soft);}
+.item-meta{
+  margin-top:3px;
+  font-family:var(--mono);
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+  color:var(--ink-faint);
+  letter-spacing:.01em;
+}
+.flag{
+  flex:0 0 auto;
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  padding:4px 8px;
+  border-radius:5px;
+  white-space:nowrap;
+  margin-top:1px;
+}
+.flag.short{background:var(--short-soft);color:var(--short);}
+.flag.stocked{background:var(--stocked-soft);color:var(--stocked);}
+
+.edit-btn{
+  flex:0 0 auto;
+  width:34px;height:34px;
+  margin:-3px -2px 0 0;
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:none;
+  color:var(--ink-faint);
+  border-radius:7px;
+}
+.edit-btn:active{background:var(--surface-2);}
+.edit-btn svg{width:15px;height:15px;display:block;}
+
+.size-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 12px 9px 14px;
+  border-top:1px solid var(--line);
+}
+.size-tag{
+  flex:0 0 auto;
+  width:42px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.06em;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+}
+.size-info{flex:1;min-width:0;}
+.size-count{
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+  font-size:13px;
+  letter-spacing:.01em;
+  color:var(--ink-soft);
+}
+.size-count b{color:var(--ink);font-weight:600;}
+.size-gap{
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:.03em;
+  margin-top:2px;
+}
+.size-gap.short{color:var(--short);}
+.size-gap.stocked{color:var(--stocked);}
+
+.stepper{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  border:1px solid var(--line-strong);
+  border-radius:9px;
+  overflow:hidden;
+  background:var(--surface);
+}
+.stepper button{
+  width:44px;height:40px;
+  border:none;
+  background:transparent;
+  color:var(--accent);
+  font-size:19px;
+  font-weight:500;
+  line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+.stepper button:active{background:var(--accent-soft);}
+.stepper button:disabled{color:var(--ink-faint);opacity:.45;}
+.stepper .n{
+  width:38px;
+  height:40px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+  font-size:15px;
+  font-weight:600;
+  border-left:1px solid var(--line);
+  border-right:1px solid var(--line);
+}
+
+/* ---------- forms ---------- */
+.form{
+  padding:13px 14px 15px;
+  border-top:1px solid var(--line);
+  background:var(--surface-2);
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{
+  font-family:var(--mono);
+  font-size:9.5px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+}
+.field input{
+  background:var(--surface);
+  border:1px solid var(--line-strong);
+  border-radius:8px;
+  padding:10px 11px;
+  font-size:16px;
+  min-height:42px;
+  width:100%;
+}
+.field.num input{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;}
+.form-actions{display:flex;gap:8px;align-items:center;padding-top:1px;}
+.btn{
+  border-radius:8px;
+  padding:10px 15px;
+  min-height:42px;
+  font-size:14px;
+  font-weight:600;
+  border:1px solid var(--line-strong);
+  background:var(--surface);
+  color:var(--ink);
+}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);}
+.btn.danger{color:var(--short);border-color:var(--line-strong);margin-left:auto;}
+
+.add-row{padding:12px 18px 0;}
+.add-btn{
+  width:100%;
+  background:var(--surface);
+  border:1px dashed var(--line-strong);
+  color:var(--ink-soft);
+  border-radius:11px;
+  padding:13px;
+  min-height:48px;
+  font-size:14px;
+  font-weight:500;
+}
+.add-btn:active{background:var(--surface-2);}
+
+/* ---------- backup ---------- */
+.backup{margin:22px 18px 0;}
+.backup > summary{
+  list-style:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  padding:13px 14px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:11px;
+  min-height:46px;
+}
+.backup > summary::-webkit-details-marker{display:none;}
+.backup[open] > summary{border-radius:11px 11px 0 0;border-bottom:none;}
+.backup .chev{margin-left:auto;transition:transform .18s ease;}
+.backup[open] .chev{transform:rotate(180deg);}
+.backup-body{
+  border:1px solid var(--line);
+  border-top:1px solid var(--line);
+  border-radius:0 0 11px 11px;
+  background:var(--surface);
+  padding:4px 14px 15px;
+  display:flex;
+  flex-direction:column;
+  gap:11px;
+}
+.backup-body p{margin:0;font-size:13px;line-height:1.5;color:var(--ink-soft);}
+.backup-body textarea{
+  width:100%;
+  min-height:88px;
+  resize:vertical;
+  background:var(--surface-2);
+  border:1px solid var(--line-strong);
+  border-radius:8px;
+  padding:10px;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.45;
+  word-break:break-all;
+}
+.backup-body .form-actions{padding-top:0;}
+
+footer{
+  padding:26px 18px 8px;
+  font-size:12px;
+  line-height:1.55;
+  color:var(--ink-faint);
+  text-align:center;
+}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:22px;
+  transform:translate(-50%,14px);
+  background:var(--ink);
+  color:var(--ground);
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.02em;
+  padding:9px 15px;
+  border-radius:8px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease,transform .18s ease;
+  z-index:60;
+  max-width:calc(100% - 36px);
+  text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0);}
+
+.empty{
+  padding:34px 18px;
+  text-align:center;
+  color:var(--ink-faint);
+  font-size:14px;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important;}
+}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="tag"><span>Layette</span><span class="dot"></span><span>Due Sep 3</span><span class="dot"></span><span>Connecticut</span></div>
+    <h1>What the drawers still need</h1>
+    <p>Targets are set for a 3-day laundry cycle with a lean buffer. Tap a counter as things arrive, get bought, or come out of a gift bag.</p>
+  </header>
+</div>
+
+<div class="summary">
+  <div class="summary-inner">
+    <div class="stat pct">
+      <div class="k" id="scopeLabel">All sizes</div>
+      <div class="v" id="statPct">0<small>%</small></div>
+    </div>
+    <div class="stat">
+      <div class="k">Pieces on hand</div>
+      <div class="v" id="statCount">0<small>/0</small></div>
+    </div>
+    <div class="stat cost">
+      <div class="k">Left to buy</div>
+      <div class="v" id="statCost">$0</div>
+    </div>
+  </div>
+  <div class="meter"><span id="meterFill" style="width:0%"></span></div>
+</div>
+
+<div class="wrap">
+  <div class="filters" role="group" aria-label="Filter by size">
+    <button data-filter="all" aria-pressed="true">All sizes</button>
+    <button data-filter="nb" aria-pressed="false">Newborn</button>
+    <button data-filter="m3" aria-pressed="false">0–3 mo</button>
+    <button data-filter="short" aria-pressed="false">Still needed</button>
+  </div>
+
+  <main class="list" id="list"></main>
+
+  <div class="add-row">
+    <button class="add-btn" id="addBtn">+ Add an item</button>
+  </div>
+
+  <details class="backup">
+    <summary>
+      <span>Backup &amp; transfer</span>
+      <svg class="chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+    </summary>
+    <div class="backup-body">
+      <p>Counts live in this browser. Copy this code and mail it to yourself to keep a copy, or paste it on another phone to move everything across.</p>
+      <textarea id="codeBox" spellcheck="false" aria-label="Backup code"></textarea>
+      <div class="form-actions">
+        <button class="btn primary" id="copyCode">Copy code</button>
+        <button class="btn" id="loadCode">Load pasted code</button>
+      </div>
+    </div>
+  </details>
+
+  <footer>Built for one small person arriving in September.</footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+var KEY = "layette.v1";
+var SIZES = [{k:"nb",label:"NB"},{k:"m3",label:"0–3"}];
+
+var SEED = [
+  ["Short-sleeve bodysuits",      4.5,  5, 4],
+  ["Long-sleeve bodysuits",       6.5,  2, 5],
+  ["Lightweight footed sleepers", 10,   4, 3],
+  ["Fleece or thicker sleepers",  13,   1, 4],
+  ["Sleep sacks and swaddles",    24,   2, 2],
+  ["Socks (pairs)",               3.5,  3, 4],
+  ["Scratch mittens",             4.5,  2, 2],
+  ["Hats, lightweight cotton",    5.5,  1, 1],
+  ["Hats, warm knit or fleece",   8,    0, 1],
+  ["Cardigan or light layer",     13.5, 1, 2],
+  ["Bunting or outdoor snowsuit", 30,   0, 1],
+  ["Bibs",                        3.5,  4, 4],
+  ["Going-home outfit",           17.5, 1, 1]
+];
+
+var state = null;
+var filter = "all";
+var editing = null;   // item id being edited, or "new"
+var seq = 0;
+
+/* ---------- state ---------- */
+
+function seedState(){
+  return { v:1, items: SEED.map(function(r){
+    return { id: nextId(), name:r[0], price:r[1], t:{nb:r[2], m3:r[3]}, h:{nb:0, m3:0} };
+  })};
+}
+
+function nextId(){ seq += 1; return "i" + seq; }
+
+function normalize(raw){
+  if(!raw || !Array.isArray(raw.items)) return null;
+  var items = raw.items.map(function(it){
+    var t = it.t || {}, h = it.h || {};
+    return {
+      id: typeof it.id === "string" && it.id ? it.id : nextId(),
+      name: String(it.name || "Untitled").slice(0,80),
+      price: clampNum(it.price, 0, 100000),
+      t: { nb: clampInt(t.nb, 0, 999), m3: clampInt(t.m3, 0, 999) },
+      h: { nb: clampInt(h.nb, 0, 999), m3: clampInt(h.m3, 0, 999) }
+    };
+  });
+  items.forEach(function(it){
+    var n = parseInt(it.id.replace(/\D/g,""), 10);
+    if(n > seq) seq = n;
+  });
+  return { v:1, items: items };
+}
+
+function clampInt(v, lo, hi){
+  var n = parseInt(v, 10);
+  if(!isFinite(n)) n = 0;
+  return Math.min(hi, Math.max(lo, n));
+}
+
+function clampNum(v, lo, hi){
+  var n = parseFloat(v);
+  if(!isFinite(n)) n = 0;
+  return Math.min(hi, Math.max(lo, Math.round(n * 100) / 100));
+}
+
+function load(){
+  var raw = null;
+  try { raw = JSON.parse(localStorage.getItem(KEY)); } catch(e){ raw = null; }
+  state = normalize(raw) || seedState();
+}
+
+var saveTimer = null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(function(){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch(e){ toast("Could not save on this device"); }
+  }, 180);
+}
+
+/* ---------- backup code ---------- */
+
+function encode(){
+  var packed = state.items.map(function(it){
+    return [it.name, it.price, it.t.nb, it.t.m3, it.h.nb, it.h.m3];
+  });
+  var json = JSON.stringify({v:1, i:packed});
+  return btoa(unescape(encodeURIComponent(json)));
+}
+
+function decode(code){
+  var json = decodeURIComponent(escape(atob(code.replace(/\s+/g,""))));
+  var obj = JSON.parse(json);
+  if(!obj || !Array.isArray(obj.i)) throw new Error("shape");
+  return normalize({ v:1, items: obj.i.map(function(r){
+    return { name:r[0], price:r[1], t:{nb:r[2], m3:r[3]}, h:{nb:r[4], m3:r[5]} };
+  })});
+}
+
+/* ---------- derived ---------- */
+
+function rowsFor(item){
+  return SIZES.filter(function(s){ return item.t[s.k] > 0; }).map(function(s){
+    var target = item.t[s.k];
+    var have = item.h[s.k];
+    return { key:s.k, label:s.label, target:target, have:have, gap:Math.max(0, target - have) };
+  });
+}
+
+function visibleRows(item){
+  var rows = rowsFor(item);
+  if(filter === "nb" || filter === "m3") return rows.filter(function(r){ return r.key === filter; });
+  if(filter === "short") return rows.filter(function(r){ return r.gap > 0; });
+  return rows;
+}
+
+function totals(){
+  var target = 0, have = 0, cost = 0;
+  state.items.forEach(function(item){
+    visibleRows(item).forEach(function(r){
+      target += r.target;
+      have += Math.min(r.have, r.target);
+      cost += r.gap * item.price;
+    });
+  });
+  return {
+    target: target,
+    have: have,
+    cost: cost,
+    pct: target ? Math.round((have / target) * 100) : 0
+  };
+}
+
+function money(n){
+  if(n >= 1000) return "$" + Math.round(n).toLocaleString("en-US");
+  return "$" + (Math.round(n * 100) % 100 === 0 ? Math.round(n) : n.toFixed(2));
+}
+
+function unitPrice(n){
+  return "$" + (Math.round(n * 100) % 100 === 0 ? Math.round(n) : n.toFixed(2));
+}
+
+/* ---------- rendering ---------- */
+
+var el = {
+  list: document.getElementById("list"),
+  pct: document.getElementById("statPct"),
+  count: document.getElementById("statCount"),
+  cost: document.getElementById("statCost"),
+  meter: document.getElementById("meterFill"),
+  scope: document.getElementById("scopeLabel"),
+  toast: document.getElementById("toast"),
+  code: document.getElementById("codeBox")
+};
+
+var SCOPE_LABEL = { all:"All sizes", nb:"Newborn", m3:"0–3 months", short:"Still needed" };
+
+function esc(s){
+  return String(s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];
+  });
+}
+
+function render(){
+  var t = totals();
+  el.scope.textContent = SCOPE_LABEL[filter];
+  el.pct.innerHTML = t.pct + "<small>%</small>";
+  el.count.innerHTML = t.have + "<small>/" + t.target + "</small>";
+  el.cost.textContent = money(t.cost);
+  el.cost.parentNode.classList.toggle("clear", t.cost === 0);
+  el.meter.style.width = t.pct + "%";
+
+  el.list.innerHTML = "";
+
+  var shown = 0;
+  state.items.forEach(function(item){
+    var rows = visibleRows(item);
+    if(rows.length === 0 && editing !== item.id) return;
+    shown += 1;
+    el.list.appendChild(itemNode(item, rows));
+  });
+
+  if(editing === "new") el.list.appendChild(formNode(null));
+
+  if(shown === 0 && editing !== "new"){
+    var e = document.createElement("div");
+    e.className = "empty";
+    e.textContent = filter === "short"
+      ? "Nothing outstanding. Every target is met."
+      : "No items in this size yet.";
+    el.list.appendChild(e);
+  }
+
+  el.code.value = encode();
+}
+
+function itemNode(item, rows){
+  var allRows = rowsFor(item);
+  var totalGap = allRows.reduce(function(a,r){ return a + r.gap; }, 0);
+
+  var node = document.createElement("article");
+  node.className = "item" + (totalGap === 0 ? " done" : "");
+
+  var head = document.createElement("div");
+  head.className = "item-head";
+  head.innerHTML =
+    '<div class="item-id">' +
+      '<div class="item-name">' + esc(item.name) + '</div>' +
+      '<div class="item-meta">' + unitPrice(item.price) + ' each' +
+        (totalGap > 0 ? ' · ' + money(totalGap * item.price) + ' to go' : '') +
+      '</div>' +
+    '</div>' +
+    '<span class="flag ' + (totalGap === 0 ? 'stocked">Stocked' : 'short">' + totalGap + ' short') + '</span>' +
+    '<button class="edit-btn" aria-label="Edit ' + esc(item.name) + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>' +
+    '</button>';
+  head.querySelector(".edit-btn").addEventListener("click", function(){
+    editing = (editing === item.id) ? null : item.id;
+    render();
+  });
+  node.appendChild(head);
+
+  rows.forEach(function(r){
+    node.appendChild(sizeNode(item, r));
+  });
+
+  if(editing === item.id) node.appendChild(formNode(item));
+
+  return node;
+}
+
+function sizeNode(item, r){
+  var row = document.createElement("div");
+  row.className = "size-row";
+  row.innerHTML =
+    '<div class="size-tag">' + r.label + '</div>' +
+    '<div class="size-info">' +
+      '<div class="size-count"><b>' + r.have + '</b> of ' + r.target + '</div>' +
+      '<div class="size-gap ' + (r.gap === 0 ? 'stocked">Target met' : 'short">' + r.gap + ' more to get') + '</div>' +
+    '</div>' +
+    '<div class="stepper">' +
+      '<button type="button" data-d="-1" aria-label="One fewer">−</button>' +
+      '<div class="n">' + r.have + '</div>' +
+      '<button type="button" data-d="1" aria-label="One more">+</button>' +
+    '</div>';
+
+  var btns = row.querySelectorAll(".stepper button");
+  btns[0].disabled = r.have === 0;
+  Array.prototype.forEach.call(btns, function(b){
+    b.addEventListener("click", function(){
+      var d = parseInt(b.getAttribute("data-d"), 10);
+      var next = Math.min(999, Math.max(0, item.h[r.key] + d));
+      if(next === item.h[r.key]) return;
+      item.h[r.key] = next;
+      save();
+      render();
+      toast(item.name + " · " + r.label + " · " + next + " of " + r.target);
+    });
+  });
+
+  return row;
+}
+
+function formNode(item){
+  var isNew = !item;
+  var form = document.createElement("form");
+  form.className = "form";
+  form.innerHTML =
+    '<div class="field"><label for="f-name">Item name</label>' +
+      '<input id="f-name" name="name" type="text" maxlength="80" required value="' + esc(isNew ? "" : item.name) + '" placeholder="Muslin swaddles"></div>' +
+    '<div class="grid3">' +
+      '<div class="field num"><label for="f-nb">Target NB</label>' +
+        '<input id="f-nb" name="nb" type="number" inputmode="numeric" min="0" max="999" step="1" value="' + (isNew ? 0 : item.t.nb) + '"></div>' +
+      '<div class="field num"><label for="f-m3">Target 0–3</label>' +
+        '<input id="f-m3" name="m3" type="number" inputmode="numeric" min="0" max="999" step="1" value="' + (isNew ? 0 : item.t.m3) + '"></div>' +
+      '<div class="field num"><label for="f-price">Price ea</label>' +
+        '<input id="f-price" name="price" type="number" inputmode="decimal" min="0" step="0.01" value="' + (isNew ? "" : item.price) + '" placeholder="0.00"></div>' +
+    '</div>' +
+    '<div class="form-actions">' +
+      '<button type="submit" class="btn primary">' + (isNew ? "Add item" : "Save") + '</button>' +
+      '<button type="button" class="btn" data-act="cancel">Cancel</button>' +
+      (isNew ? "" : '<button type="button" class="btn danger" data-act="delete">Delete</button>') +
+    '</div>';
+
+  form.addEventListener("submit", function(ev){
+    ev.preventDefault();
+    var name = form.elements.name.value.trim();
+    if(!name){ form.elements.name.focus(); return; }
+    var nb = clampInt(form.elements.nb.value, 0, 999);
+    var m3 = clampInt(form.elements.m3.value, 0, 999);
+    if(nb === 0 && m3 === 0){
+      toast("Set a target for at least one size");
+      form.elements.nb.focus();
+      return;
+    }
+    var price = clampNum(form.elements.price.value, 0, 100000);
+
+    if(isNew){
+      state.items.push({ id: nextId(), name:name, price:price, t:{nb:nb, m3:m3}, h:{nb:0, m3:0} });
+      toast("Added " + name);
+    } else {
+      item.name = name; item.price = price;
+      item.t.nb = nb; item.t.m3 = m3;
+      item.h.nb = Math.min(item.h.nb, 999);
+      item.h.m3 = Math.min(item.h.m3, 999);
+      toast("Saved " + name);
+    }
+    editing = null;
+    save();
+    render();
+  });
+
+  form.addEventListener("click", function(ev){
+    var act = ev.target.getAttribute && ev.target.getAttribute("data-act");
+    if(act === "cancel"){ editing = null; render(); }
+    if(act === "delete"){
+      if(window.confirm("Delete " + item.name + "?")){
+        state.items = state.items.filter(function(x){ return x.id !== item.id; });
+        editing = null;
+        save();
+        render();
+        toast("Deleted " + item.name);
+      }
+    }
+  });
+
+  setTimeout(function(){ if(isNew) form.elements.name.focus(); }, 30);
+  return form;
+}
+
+/* ---------- toast ---------- */
+
+var toastTimer = null;
+function toast(msg){
+  el.toast.textContent = msg;
+  el.toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.toast.classList.remove("show"); }, 1600);
+}
+
+/* ---------- wiring ---------- */
+
+Array.prototype.forEach.call(document.querySelectorAll(".filters button"), function(b){
+  b.addEventListener("click", function(){
+    filter = b.getAttribute("data-filter");
+    Array.prototype.forEach.call(document.querySelectorAll(".filters button"), function(o){
+      o.setAttribute("aria-pressed", String(o === b));
+    });
+    editing = null;
+    render();
+  });
+});
+
+document.getElementById("addBtn").addEventListener("click", function(){
+  editing = (editing === "new") ? null : "new";
+  render();
+  if(editing === "new") el.list.lastChild.scrollIntoView({block:"center", behavior:"smooth"});
+});
+
+document.getElementById("copyCode").addEventListener("click", function(){
+  var text = el.code.value;
+  function fallback(){
+    el.code.focus();
+    el.code.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+    toast(ok ? "Code copied" : "Selected, press copy to save it");
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast("Code copied"); }, fallback);
+  } else fallback();
+});
+
+document.getElementById("loadCode").addEventListener("click", function(){
+  var code = el.code.value.trim();
+  if(!code){ toast("Paste a code into the box first"); return; }
+  var next;
+  try { next = decode(code); }
+  catch(e){ toast("That code could not be read"); return; }
+  if(!next || !next.items.length){ toast("That code has no items in it"); return; }
+  if(!window.confirm("Replace everything on this device with " + next.items.length + " items from the code?")) return;
+  state = next;
+  editing = null;
+  save();
+  render();
+  toast("Loaded " + next.items.length + " items");
+});
+
+load();
+render();
+
+})();
+</script>
